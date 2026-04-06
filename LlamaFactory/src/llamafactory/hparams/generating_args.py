@@ -58,6 +58,10 @@ class GeneratingArguments:
         default=1.0,
         metadata={"help": "The parameter for repetition penalty. 1.0 means no penalty."},
     )
+    no_repeat_ngram_size: int = field(
+        default=0,
+        metadata={"help": "If > 0, n-grams of this size cannot repeat (0 = disabled). Helps greedy decode loops."},
+    )
     length_penalty: float = field(
         default=1.0,
         metadata={"help": "Exponential penalty to the length that is used with beam-based generation."},
@@ -73,6 +77,9 @@ class GeneratingArguments:
             args.pop("max_length", None)
         else:
             args.pop("max_new_tokens", None)
+
+        if args.get("no_repeat_ngram_size", 0) <= 0:
+            args.pop("no_repeat_ngram_size", None)
 
         if obey_generation_config:
             generation_config = GenerationConfig()

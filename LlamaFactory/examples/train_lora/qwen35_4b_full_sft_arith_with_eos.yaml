@@ -1,0 +1,61 @@
+# 算术全参 + head-gate，与 qwen35_4b_lora_sft_migration.yaml 一致，但每条样本末尾追加 EOS，便于 predict 时模型学会停。
+# 约束：LlamaFactory 要求 efficient_eos 与 train_on_prompt 不能同时为 true，故此处 train_on_prompt: false（损失只在 response 上）。
+### model
+model_name_or_path: /cluster/home/yifhou/group_work/huggingface_models/Qwen3-4B/
+trust_remote_code: true
+flash_attn: disabled
+use_reentrant_gc: false
+
+### method
+stage: sft
+do_train: true
+finetuning_type: full
+use_head_gate: true
+gate_train_only: false
+gate_hidden_dim: null
+gate_bias_init: 0.0
+gate_init_noise_std: 1.0e-3
+gate_reg_lambda: 0.01
+gate_target_ratio: 0.2
+
+### dataset
+dataset: synthetic_ari_train_eq
+eval_dataset: synthetic_ari_eval_eq
+dataset_dir: data
+template: empty_eos
+default_system: null
+train_on_prompt: false
+val_size: 0.0
+cutoff_len: 256
+overwrite_cache: true
+preprocessing_num_workers: 4
+dataloader_num_workers: 4
+
+### output
+output_dir: saves/qwen35-4b/full/gate_full_eos
+logging_steps: 10
+save_steps: 500
+eval_steps: 500
+plot_loss: true
+overwrite_output_dir: false
+save_only_model: false
+report_to: none
+
+### train
+per_device_train_batch_size: 1
+per_device_eval_batch_size: 1
+learning_rate: 1.0e-4
+gradient_accumulation_steps: 8
+num_train_epochs: 1.0
+lr_scheduler_type: cosine
+warmup_ratio: 0.1
+bf16: true
+ddp_find_unused_parameters: true
+ddp_timeout: 180000000
+
+### eval
+do_eval: true
+eval_strategy: steps
+load_best_model_at_end: true
+metric_for_best_model: eval_loss
+greater_is_better: false

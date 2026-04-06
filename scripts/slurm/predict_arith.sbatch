@@ -13,7 +13,18 @@
 
 set -euo pipefail
 
+# Slurm 把 SLURM_SUBMIT_DIR 设为执行 sbatch 时的当前目录；必须在含 LlamaFactory 的目录提交。
 ROOT="${SLURM_SUBMIT_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}"
+if [ -d "$ROOT/LlamaFactory" ]; then
+  :
+elif [ -d "$ROOT/cotfingerprint/LlamaFactory" ]; then
+  ROOT="$ROOT/cotfingerprint"
+else
+  echo "ERROR: 找不到 LlamaFactory。请在仓库根目录 cotfingerprint/ 下执行:" >&2
+  echo "  cd <path>/cotfingerprint && sbatch scripts/slurm/predict_arith.sbatch" >&2
+  echo "当前 SLURM_SUBMIT_DIR=$ROOT" >&2
+  exit 1
+fi
 cd "$ROOT"
 mkdir -p logs
 

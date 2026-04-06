@@ -862,6 +862,13 @@ register_template(
 )
 
 
+register_template(
+    name="empty_eos",
+    format_assistant=StringFormatter(slots=["{{content}}"]),
+    efficient_eos=True,
+)
+
+
 # copied from chatml template
 register_template(
     name="ernie",

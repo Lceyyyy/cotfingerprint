@@ -2,7 +2,7 @@
 # 比纯 do_eval 慢很多；全量 5k 条请预留足够时间。
 
 ### model（相对 LlamaFactory 根目录）
-model_name_or_path: saves/qwen35-4b/full/gate_full/checkpoint-6250
+model_name_or_path: saves/qwen35-4b/full/sft-migration/checkpoint-1563
 trust_remote_code: true
 flash_attn: disabled
 
@@ -30,7 +30,7 @@ preprocessing_num_workers: 4
 dataloader_num_workers: 2
 
 ### output
-output_dir: saves/qwen35-4b/full/gate_full/predict_run_checkpoint6250
+output_dir: saves/qwen35-4b/full/sft-migration/predict_run_checkpoint1563
 overwrite_output_dir: true
 report_to: none
 
@@ -42,9 +42,11 @@ ddp_timeout: 180000000
 eval_strategy: "no"
 save_strategy: "no"
 logging_steps: 10
-
-# 生成参数（与 teacher-forcing 的 eval 不同；greedy 便于复现）
+max_samples: 8
+# 生成：empty 模板训练无结尾 EOS，正确链写完后仍会续写；除缩短长度、加大 repetition 外，用 no_repeat_ngram 抑制「= 1 - 2 = 9」循环
 do_sample: false
-max_new_tokens: 256
+max_new_tokens: 64
+repetition_penalty: 1.35
+no_repeat_ngram_size: 5
 top_p: 0.7
 temperature: 0.95
