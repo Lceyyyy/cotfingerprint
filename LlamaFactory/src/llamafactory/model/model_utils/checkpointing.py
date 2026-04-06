@@ -118,7 +118,13 @@ def _gradient_checkpointing_enable(
         raise ValueError(f"{self.__class__.__name__} does not support gradient checkpointing.")
 
     if gradient_checkpointing_kwargs is None:
+        # Transformers Trainer calls gradient_checkpointing_enable again with kwargs=None; keep the first call's
+        # settings (e.g. use_reentrant from model_args) instead of resetting to reentrant checkpointing.
+        gradient_checkpointing_kwargs = getattr(self, "_llamafactory_gradient_checkpointing_kwargs", None)
+    if gradient_checkpointing_kwargs is None:
         gradient_checkpointing_kwargs = {"use_reentrant": True}
+
+    setattr(self, "_llamafactory_gradient_checkpointing_kwargs", dict(gradient_checkpointing_kwargs))
 
     if use_unsloth_gc:
         gradient_checkpointing_func = get_unsloth_gradient_checkpointing_func()

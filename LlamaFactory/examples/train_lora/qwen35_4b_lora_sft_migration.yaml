@@ -2,6 +2,8 @@
 model_name_or_path: /cluster/home/yifhou/group_work/huggingface_models/Qwen3-4B/
 trust_remote_code: true
 flash_attn: disabled
+# 非 reentrant GC；且代码会记住首次 kwargs，避免 Trainer 第二次 enable 时用 None 又改回 reentrant
+use_reentrant_gc: false
 
 ### method
 stage: sft
@@ -24,7 +26,7 @@ eval_dataset: synthetic_ari_eval_eq
 dataset_dir: data
 template: empty
 default_system: null
-train_on_prompt: false
+train_on_prompt: true
 val_size: 0.0
 cutoff_len: 256
 overwrite_cache: true
@@ -50,6 +52,8 @@ num_train_epochs: 1.0
 lr_scheduler_type: cosine
 warmup_ratio: 0.1
 bf16: true
+# head-gate 下部分参数可能未参与每一步 loss；DDP 必须开启，否则报 unused parameters / reducer 错误
+ddp_find_unused_parameters: true
 ddp_timeout: 180000000
 
 ### eval

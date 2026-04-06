@@ -23,7 +23,7 @@ from typing import TYPE_CHECKING, Any, Optional, Union
 
 import numpy as np
 import torch
-from transformers import Seq2SeqTrainer
+from transformers import Seq2SeqTrainer, TrainerCallback
 from typing_extensions import override
 
 from ...extras import logging
@@ -43,6 +43,24 @@ if TYPE_CHECKING:
 
 
 logger = logging.get_logger(__name__)
+
+
+class _DdpGradientCheckpointStaticGraphCallback(TrainerCallback):
+    r"""DDP + gradient checkpointing: avoid "marked as ready twice" (reentrant hooks / unused params)."""
+
+    def __init__(self, trainer: "CustomSeq2SeqTrainer") -> None:
+        self._trainer = trainer
+
+    def on_train_begin(self, args, state, control, **kwargs):
+        if getattr(args, "world_size", 1) <= 1:
+            return control
+        if not getattr(self._trainer.model, "is_gradient_checkpointing", False):
+            return control
+        wrapped = self._trainer.model_wrapped
+        if wrapped is not None and hasattr(wrapped, "_set_static_graph"):
+            wrapped._set_static_graph()
+            logger.info_rank0("DDP: _set_static_graph() enabled (gradient checkpointing).")
+        return control
 
 
 class CustomSeq2SeqTrainer(Seq2SeqTrainer):
@@ -66,6 +84,7 @@ class CustomSeq2SeqTrainer(Seq2SeqTrainer):
                 patch_accelerator_for_fp8()
 
         super().__init__(**kwargs)
+        self.add_callback(_DdpGradientCheckpointStaticGraphCallback(self))
         if processor is not None:
             # avoid wrong loss under gradient accumulation
             # https://github.com/huggingface/transformers/pull/36044#issuecomment-2746657112
