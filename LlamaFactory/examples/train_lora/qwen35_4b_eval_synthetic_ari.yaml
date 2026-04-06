@@ -1,0 +1,41 @@
+### model（相对 LlamaFactory 根目录；可改为你的 checkpoint 路径）
+model_name_or_path: saves/qwen35-4b/full/gate_full/checkpoint-6250
+trust_remote_code: true
+flash_attn: disabled
+
+### method
+stage: sft
+do_train: false
+do_eval: true
+finetuning_type: full
+use_head_gate: true
+gate_train_only: false
+gate_hidden_dim: null
+gate_bias_init: 0.0
+gate_init_noise_std: 1.0e-3
+gate_reg_lambda: 0.0
+gate_target_ratio: 0.2
+compute_accuracy: true
+
+### dataset（与 train_eq 一致；template empty = 仅算式文本进模型）
+eval_dataset: synthetic_ari_eval_eq
+dataset_dir: data
+template: empty
+cutoff_len: 256
+overwrite_cache: true
+preprocessing_num_workers: 4
+dataloader_num_workers: 2
+
+### output
+output_dir: saves/qwen35-4b/full/gate_full/eval_run_checkpoint6250
+overwrite_output_dir: true
+report_to: none
+
+### train/eval runtime (no training steps)
+per_device_eval_batch_size: 2
+bf16: true
+ddp_timeout: 180000000
+eval_strategy: "no"
+save_strategy: "no"
+logging_steps: 10
+load_best_model_at_end: false

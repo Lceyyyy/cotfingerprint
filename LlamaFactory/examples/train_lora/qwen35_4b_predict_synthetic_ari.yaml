@@ -1,0 +1,50 @@
+# 批量生成并保存到 output_dir/generated_predictions.jsonl（每行: prompt / predict / label）
+# 比纯 do_eval 慢很多；全量 5k 条请预留足够时间。
+
+### model（相对 LlamaFactory 根目录）
+model_name_or_path: saves/qwen35-4b/full/gate_full/checkpoint-6250
+trust_remote_code: true
+flash_attn: disabled
+
+### method
+stage: sft
+do_train: false
+do_predict: true
+finetuning_type: full
+use_head_gate: true
+gate_train_only: false
+gate_hidden_dim: null
+gate_bias_init: 0.0
+gate_init_noise_std: 1.0e-3
+gate_reg_lambda: 0.0
+gate_target_ratio: 0.2
+
+### dataset（与 train_eq 一致；template empty = 仅算式文本进模型）
+eval_dataset: synthetic_ari_eval_eq
+dataset_dir: data
+template: empty
+cutoff_len: 256
+# 换数据集名/文件后务必 true 一次，否则会沿用旧的 HuggingFace datasets 磁盘缓存（prompt 仍是 expression）
+overwrite_cache: true
+preprocessing_num_workers: 4
+dataloader_num_workers: 2
+
+### output
+output_dir: saves/qwen35-4b/full/gate_full/predict_run_checkpoint6250
+overwrite_output_dir: true
+report_to: none
+
+### eval / generation
+per_device_eval_batch_size: 1
+predict_with_generate: true
+bf16: true
+ddp_timeout: 180000000
+eval_strategy: "no"
+save_strategy: "no"
+logging_steps: 10
+
+# 生成参数（与 teacher-forcing 的 eval 不同；greedy 便于复现）
+do_sample: false
+max_new_tokens: 256
+top_p: 0.7
+temperature: 0.95

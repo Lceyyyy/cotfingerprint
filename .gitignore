@@ -1,0 +1,17 @@
+# 训练产出（体积大）
+LlamaFactory/saves/
+
+# Python
+__pycache__/
+*.py[cod]
+.Python
+*.egg-info/
+.eggs/
+
+# 日志（Slurm 本地跑时）
+logs/
+*.out
+*.err
+
+# 嵌套仓库备份（勿提交）
+LlamaFactory/.git.bak_upstream/
