@@ -13,5 +13,8 @@ logs/
 *.out
 *.err
 
+# 本地环境（勿提交）
+LlamaFactory/.env.local
+
 # 嵌套仓库备份（勿提交）
 LlamaFactory/.git.bak_upstream/
